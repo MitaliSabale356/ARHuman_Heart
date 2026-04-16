@@ -3,7 +3,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const scene = document.querySelector("a-scene");
 
   btn.addEventListener("click", async () => {
-    await scene.components["mindar-image-system"].start();
-    btn.style.display = "none";
+    const mindarSystem = scene.systems["mindar-image-system"];
+
+    if (mindarSystem) {
+      await mindarSystem.start();
+      btn.style.display = "none";
+    } else {
+      alert("AR not starting");
+    }
   });
 });
