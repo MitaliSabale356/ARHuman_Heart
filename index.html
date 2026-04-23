@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AR Heart Final</title>
+
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+</head>
+
+<body style="margin:0; overflow:hidden;">
+
+<a-scene
+  vr-mode-ui="enabled: true"
+  embedded
+  renderer="logarithmicDepthBuffer: true;"
+  webxr="requiredFeatures: hit-test; optionalFeatures: dom-overlay"
+  xr-mode-ui="enabled: true">
+
+  <!-- Camera -->
+  <a-camera></a-camera>
+
+  <!-- Lights -->
+  <a-light type="ambient" intensity="1"></a-light>
+  <a-light type="directional" position="1 2 1"></a-light>
+
+  <!-- Cursor -->
+  <a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable"></a-entity>
+
+  <!-- Reticle -->
+  <a-entity
+    id="reticle"
+    geometry="primitive: ring; radiusInner: 0.05; radiusOuter: 0.06"
+    material="color: white"
+    visible="false">
+  </a-entity>
+
+  <!-- HEART GROUP -->
+  <a-entity id="heartGroup" visible="false">
+
+    <!-- HEART MODEL -->
+    <a-entity
+      id="heart"
+      gltf-model="heart.glb"
+      scale="0.3 0.3 0.3"
+      animation__beat="property: scale; dir: alternate; dur: 600; loop: true; to: 0.35 0.35 0.35"
+      animation__rotate="property: rotation; to: 0 360 0; loop: true; dur: 6000">
+    </a-entity>
+
+    <!-- LABELS -->
+    <a-text value="Aorta" class="clickable" position="0 0.6 0" color="red"></a-text>
+    <a-text value="Left Atrium" class="clickable" position="-0.5 0.2 0" color="yellow"></a-text>
+    <a-text value="Right Ventricle" class="clickable" position="0.5 -0.3 0" color="cyan"></a-text>
+
+  </a-entity>
+
+  <!-- INFO PANEL -->
+  <a-plane id="infoPanel"
+    position="0 1.5 -1"
+    width="1.5"
+    height="0.6"
+    color="black"
+    visible="false">
+
+    <a-text id="infoText"
+      value=""
+      color="white"
+      align="center"
+      width="1.4">
+    </a-text>
+
+  </a-plane>
+
+</a-scene>
+
+<script>
+let scene = document.querySelector('a-scene');
+let reticle = document.querySelector('#reticle');
+let heartGroup = document.querySelector('#heartGroup');
+let infoPanel = document.querySelector('#infoPanel');
+let infoText = document.querySelector('#infoText');
+
+// HIT TEST
+scene.addEventListener("enter-vr", () => {
+  const session = scene.renderer.xr.getSession();
+  if (!session) return;
+
+  session.requestReferenceSpace('viewer').then((refSpace) => {
+    session.requestHitTestSource({ space: refSpace }).then((source) => {
+
+      function render(frame) {
+        const ref = scene.renderer.xr.getReferenceSpace();
+        const hits = frame.getHitTestResults(source);
+
+        if (hits.length > 0) {
+          const pose = hits[0].getPose(ref);
+
+          reticle.setAttribute("visible", true);
+          reticle.setAttribute("position", {
+            x: pose.transform.position.x,
+            y: pose.transform.position.y,
+            z: pose.transform.position.z
+          });
+        }
+
+        session.requestAnimationFrame(render);
+      }
+
+      session.requestAnimationFrame(render);
+    });
+  });
+});
+
+// TAP PLACE
+window.addEventListener("click", () => {
+  if (reticle.getAttribute("visible")) {
+    heartGroup.setAttribute("visible", true);
+    heartGroup.setAttribute("position", reticle.getAttribute("position"));
+  }
+});
+
+// LABEL INFO
+document.querySelectorAll('.clickable').forEach(label => {
+  label.addEventListener('click', () => {
+
+    let info = {
+      "Aorta": "Carries oxygenated blood from heart.",
+      "Left Atrium": "Receives blood from lungs.",
+      "Right Ventricle": "Pumps blood to lungs."
+    };
+
+    let name = label.getAttribute("value");
+
+    infoText.setAttribute("value", info[name]);
+    infoPanel.setAttribute("visible", true);
+
+    setTimeout(() => {
+      infoPanel.setAttribute("visible", false);
+    }, 3000);
+  });
+});
+</script>
+
+</body>
+</html>
