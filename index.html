@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AR Heart Advanced</title>
+
+  <!-- AFRAME -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+  <!-- MINDAR -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
+</head>
+
+<body style="margin:0; overflow:hidden;">
+
+<a-scene
+  mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/examples/image-tracking/assets/card-example/card.mind;"
+  vr-mode-ui="enabled: false"
+  device-orientation-permission-ui="enabled: true">
+
+  <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+  <a-entity mindar-image-target="targetIndex: 0">
+
+    <!-- HEART GROUP -->
+    <a-entity id="heartGroup" scale="0.2 0.2 0.2">
+
+      <!-- HEART MODEL -->
+      <a-entity
+        gltf-model="heart.glb"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 6000">
+      </a-entity>
+
+      <!-- ===== LABEL + LINE ===== -->
+
+      <!-- AORTA -->
+      <a-entity class="clickable" data-info="Main artery carrying oxygenated blood">
+
+        <a-text value="Aorta" position="0 2 0" color="red" align="center"></a-text>
+
+        <!-- line -->
+        <a-cylinder position="0 1 0" height="2" radius="0.02" color="white"></a-cylinder>
+
+      </a-entity>
+
+      <!-- LEFT ATRIUM -->
+      <a-entity class="clickable" data-info="Receives oxygenated blood from lungs">
+
+        <a-text value="Left Atrium" position="-2 1 0" color="yellow"></a-text>
+
+        <a-cylinder position="-1 0.5 0" height="1.5" radius="0.02" color="white"></a-cylinder>
+
+      </a-entity>
+
+      <!-- RIGHT VENTRICLE -->
+      <a-entity class="clickable" data-info="Pumps blood to lungs">
+
+        <a-text value="Right Ventricle" position="2 -1 0" color="cyan"></a-text>
+
+        <a-cylinder position="1 -0.5 0" height="1.5" radius="0.02" color="white"></a-cylinder>
+
+      </a-entity>
+
+    </a-entity>
+
+  </a-entity>
+
+  <!-- INFO PANEL -->
+  <a-plane id="infoPanel"
+    position="0 1 -2"
+    width="1.8"
+    height="0.6"
+    color="black"
+    visible="false">
+
+    <a-text id="infoText"
+      value=""
+      color="white"
+      align="center"
+      width="1.6">
+    </a-text>
+
+  </a-plane>
+
+</a-scene>
+
+<script>
+// CLICK HANDLER
+document.querySelectorAll('.clickable').forEach(el => {
+  el.addEventListener('click', () => {
+
+    let text = el.getAttribute('data-info');
+
+    let panel = document.querySelector('#infoPanel');
+    let info = document.querySelector('#infoText');
+
+    info.setAttribute('value', text);
+    panel.setAttribute('visible', true);
+
+    setTimeout(() => {
+      panel.setAttribute('visible', false);
+    }, 3000);
+  });
+});
+</script>
+
+</body>
+</html>
